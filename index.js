@@ -95,22 +95,29 @@ async function getAudioUrl(kanji) {
  */
 async function run(words) {
   const badWords = [];
-  Promise.all(
-    words.reverse().map(word =>
-      addWord(word).catch(err => {
-        console.error(word, err);
-        badWords.push(word);
-      })
+  words
+    .reverse()
+    .reduce(
+      (prom, word) =>
+        prom.then(() =>
+          addWord(word).catch(err => {
+            console.error(word, err);
+            badWords.push(word);
+          })
+        ),
+      Promise.resolve()
     )
-  ).then(() => {
-    console.log('====================================');
-    console.log('Finished uploading words');
-    console.log('====================================');
-    if (badWords.length > 0) {
-      console.log('Some problematic words were encoutered, please investigate');
-      console.log(JSON.stringify(badWords));
-    }
-  });
+    .then(() => {
+      console.log('====================================');
+      console.log('Finished uploading words');
+      console.log('====================================');
+      if (badWords.length > 0) {
+        console.log(
+          'Some problematic words were encoutered, please investigate'
+        );
+        console.log(JSON.stringify(badWords));
+      }
+    });
 }
 
 run(words);
